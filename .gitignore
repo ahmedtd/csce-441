@@ -1,0 +1,23 @@
+
+# CMake stuff
+build/
+CMakeCache.txt
+CMakeFiles
+cmake_install.cmake
+install_manifest.txt
+
+# Compiled object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic Libraries
+*.so
+
+# Compiled Static Libraries
+*.lai
+*.la
+*.a
+
+
+
