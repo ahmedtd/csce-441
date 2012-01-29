@@ -1,20 +1,37 @@
-#include <GL/gl.h>
+
+#ifndef BRUSH
+#define BRUSH
 
 #include "color.hpp"
 #include "geometry.hpp"
 
+enum brushtype
+{
+    square,
+    tri,
+    circle,
+    line
+};
+
+
 class brush
 {
 public:
-    brush(double size,
-          vec2   position,
-          color  drawcolor,
-          double alphadecay,
-          double angle);
+    brush(const double  size,
+          const vec2   &position,
+          const color  &drawcolor,
+          const double  alphadecay,
+          const double  angle);
     
     virtual void draw() = 0;
 
-private:
+    static brush* dispatchConstructor(const brushtype type,
+                                      const double    size,
+                                      const vec2      &position,
+                                      const color     &drawcolor,
+                                      const double    alphadecay,
+                                      const double    angle);
+protected:
     double mSize;
     color  mColor;
     vec2   mPosition;
@@ -25,26 +42,23 @@ private:
 class squarebrush : public brush
 {
 public:
-    squarebrush(double size,
-                vec2   position,
-                color  drawcolor,
-                double alphadecay,
-                double angle);
+    squarebrush(const double  size,
+                const vec2   &position,
+                const color  &drawcolor,
+                const double  alphadecay,
+                const double  angle);
 
     virtual void draw();
-
-private:
-
 };
 
 class tribrush : public brush
 {
 public:
-    tribrush(double size,
-             vec2   position,
-             color  drawcolor,
-             double alphadecay,
-             double angle);
+    tribrush(const double  size,
+             const vec2   &position,
+             const color  &drawcolor,
+             const double  alphadecay,
+             const double  angle);
     
     virtual void draw();
 };
@@ -52,11 +66,11 @@ public:
 class circlebrush : public brush
 {
 public:
-    circlebrush(double size,
-                vec2   position,
-                color  drawcolor,
-                double alphadecay,
-                double angle);
+    circlebrush(const double  size,
+                const vec2   &position,
+                const color  &drawcolor,
+                const double  alphadecay,
+                const double  angle);
 
     virtual void draw();
 };
@@ -64,11 +78,13 @@ public:
 class linebrush : public brush
 {
 public:
-    linebrush(double size,
-              vec2   position,
-              color  drawcolor,
-              double alphadecay,
-              double angle);
+    linebrush(const double  size,
+              const vec2   &position,
+              const color  &drawcolor,
+              const double  alphadecay,
+              const double  angle);
 
     virtual void draw();
 };
+
+#endif

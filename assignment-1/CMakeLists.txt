@@ -14,6 +14,6 @@ if (GLUT_FOUND)
    include_directories (${GLUT_INCLUDE_DIR})
 endif (GLUT_FOUND)
 
-add_executable (paint paint.cpp)
+add_executable (paint paint.cpp brush.cpp color.cpp vec2.cpp)
 target_link_libraries (paint ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 
