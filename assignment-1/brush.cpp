@@ -78,6 +78,7 @@ void squarebrush::draw()
     glVertex2dv(vec2( mSize, -mSize));
     glVertex2dv(vec2(-mSize, -mSize));
     glVertex2dv(vec2(-mSize,  mSize));
+    glVertex2dv(vec2( mSize,  mSize));
 
     glEnd();
 
