@@ -31,6 +31,8 @@ if(DOXYGEN_FOUND)
         VERBATIM)
 endif(DOXYGEN_FOUND)
 
+configure_file (${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+
 add_executable (paint paint.cpp brush.cpp color.cpp vec2.cpp)
 target_link_libraries (paint ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 

@@ -5,7 +5,7 @@
 #include <ostream>
 using std::ostream;
 
-#include <GL/gl.h>
+#include <GL/glut.h>
 
 /// A class that represents an RGBA color, that can be implicitly interpreted as
 /// an array of four GLdoubles.

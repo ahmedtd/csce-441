@@ -2,7 +2,7 @@
 #ifndef GEOMETRY
 #define GEOMETRY
 
-#include <GL/gl.h>
+#include <GL/glut.h>
 
 /// Vector of length 2, that is implicitly interpretable as a vector of 2
 /// GLdoubles.

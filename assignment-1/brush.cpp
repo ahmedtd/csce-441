@@ -8,8 +8,10 @@ using std::exp;
 #include <iostream>
 using std::cout;
 using std::endl;
+#include <stdexcept>
+using std::runtime_error;
 
-#include <GL/gl.h>
+#include <GL/glut.h>
 
 brush::brush(const double  size,
              const vec2   &position,
@@ -48,6 +50,11 @@ brush* brush::dispatchConstructor(const brushtype type,
     else if(type == circle)
     {
         return new circlebrush(size, position, drawcolor, alphadecay, angle);
+    }
+    else
+    {
+        throw new runtime_error("Invalid enum value in brush::dispatchConstructor");
+        return nullptr;
     }
 }
 
@@ -226,13 +233,12 @@ void linebrush::draw()
     
     // Perform the drawing as two line segments to get a sensible blending
     // pattern.
-    glBegin(GL_LINE);
+    glBegin(GL_LINES);
     
-    glColor4dv(innerColor);
-    glVertex2dv(vec2(0.0, 0.0));
     glColor4dv(outerColor);
     glVertex2dv(vec2(mSize, 0.0));
-
+    glColor4dv(innerColor);
+    glVertex2dv(vec2(0.0, 0.0));
     glColor4dv(innerColor);
     glVertex2dv(vec2(0.0, 0.0));
     glColor4dv(outerColor);

@@ -7,7 +7,6 @@ using std::cout;
 using std::endl;
 
 #include <GL/glut.h>
-#include <GL/gl.h>
 
 #include "brush.hpp"
 
@@ -93,7 +92,7 @@ void keyboardCallback(unsigned char key, int x, int y)
     {
         currentSize /= 2.0;
         if(currentSize < 1.0)
-            currentSize < 128.0;
+            currentSize = 1.0;
     }
 
     // Should we change the current brush color?
