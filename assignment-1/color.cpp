@@ -61,3 +61,13 @@ color::operator const GLdouble*() const
 {
     return static_cast<const GLdouble*>(mComponents);
 }
+
+ostream& operator<<(ostream &out, const color &rop)
+{
+    out << "[r" << rop.r()
+        << " g" << rop.g()
+        << " b" << rop.b()
+        << " a" << rop.a()
+        << "]";
+    return out;
+}
