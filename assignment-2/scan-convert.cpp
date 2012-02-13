@@ -74,9 +74,6 @@ void displayCallback()
     cout << "Display: framebuffer " << pseudo_framebuffer.size() << endl;
 
     glClear(GL_COLOR_BUFFER_BIT);
-
-    // Build the global edge table
-    map<int, list<edgedesc> > get;
     
     // Iterate over all polygons
     vector<vector<vec2> >::iterator polygon_it;
@@ -84,20 +81,23 @@ void displayCallback()
         polygon_it != polygons.end();
         polygon_it++)
     {
+        // Build the global edge table
+        map<int, list<edgedesc> > get;
+
         // Check to make sure this polygon is displayable
         if((*polygon_it).size() <= 2)
             continue;
 
         // Iterate over all edges of the polygon
-        vector<vec2>::iterator p1_it = (*polygon_it).end()--;
+        vector<vec2>::iterator p1_it = (*polygon_it).begin();
         vector<vec2>::iterator p2_it = (*polygon_it).begin();
-        for(; p2_it != (*polygon_it).end(); p1_it++, p2_it++)
+        p2_it++;
+        for(; p1_it != (*polygon_it).end(); p1_it++, p2_it++)
         {
-            if(p1_it == (*polygon_it).end())
-                p1_it = (*polygon_it).begin();
+            if(p2_it == (*polygon_it).end())
+                p2_it = (*polygon_it).begin();
             
-            // TEST CODE
-            setFramebuffer(p2_it->x(), p2_it->y(), color::white());
+            cout << "Considering edge " << *p1_it << "->" << *p2_it << endl;
 
             // Unpack the relevant parameters of the edge
             int minPixX = min(floor(p1_it->x()), floor(p2_it->x()));
@@ -119,8 +119,11 @@ void displayCallback()
 
             // If this edge is horizontal in pixel coordinates, ignore it
             if(minPixY == maxPixY)
+            {
+                cout << "Ignoring horizontal edge" << endl;
                 continue;
-            
+            }
+
             // Pack up this edge
             edgedesc thisedge;
             thisedge.ymax = maxPixY;
@@ -129,78 +132,84 @@ void displayCallback()
             thisedge.slope_x = sign * (maxPixX - minPixX);
             thisedge.slope_y = maxPixY - minPixY;
 
+            cout << "About to put edge in global edge table" << endl;
+
             // Put it in the global edge table
             (get[minPixY]).push_back(thisedge);
             get[minPixY].sort();
         }
-    }
 
-    // Scan-convert from the global edge table
-    list<edgedesc> aet;
-    map<int, list<edgedesc> >::iterator get_it = get.begin();
-    int curPixY = get.begin()->first;
-    while(curPixY < window_height)
-    {
-        // If we're on a y value where edges begin or end
-        if(curPixY == get_it->first)
-        {
-            // Copy edges that start here to the active edge table
-            copy(get_it->second.begin(), get_it->second.end(), aet.begin());
-        
-            // Remove edges that end here
-            edge_y_selector selector(curPixY);
-            remove_if(aet.begin(), aet.end(), selector);
-            
-            aet.sort();
-        }
-      
-        // Draw the span at this range
-        list<edgedesc>::iterator curBound_it = aet.begin();
-        int curPixX = curBound_it->xcur;
-        curBound_it++;
-        bool drawing = true;
+        // Scan-convert from the global edge table
+        list<edgedesc> aet;
+        map<int, list<edgedesc> >::iterator get_it = get.begin();
+        int curPixY = get_it->first;
         while(true)
         {
-            // Have we reached a transition point?
-            if(curPixX == curBound_it->xcur)
+            
+            // BUG BUG BUG
+            // Bug is happening because the the edge transition below is not
+            // being properly invoked.
+
+            // If we're on a y value where edges begin or end
+            if(curPixY == get_it->first)
             {
-                drawing = !drawing;
-     
-                // Advance the current edge
-                curBound_it++;
-                
-                // Check to see if we're at the last edge
-                if(curBound_it == aet.end())
+                if(get_it == get.end())
                     break;
+
+                cout << "Edges transitioning: " << curPixY << endl;
+
+                // Copy edges that start here to the active edge table
+                aet.splice(aet.begin(), get_it->second);
+                    
+                // Remove edges that end here
+                edge_y_selector selector(curPixY);
+                remove_if(aet.begin(), aet.end(), selector);
+            
+                aet.sort();
+
+                get_it++;
             }
-            
-            if(drawing)
+      
+            // Draw the span at this range
+            list<edgedesc>::iterator curBound_it = aet.begin();
+            int curPixX = curBound_it->xcur;
+            bool drawing = false;
+            while(true)
             {
-                setFramebuffer(curPixX, curPixY, color::white());
-            }    
-        }
-        
-        // Increment y by 1
-        curPixY++;
-
-        // Increment the global edge table iterator
-        if(curPixY == get_it->first)
-        {
-            get_it++;
+                // Have we reached a transition point?
+                if(curPixX == curBound_it->xcur)
+                {
+                    drawing = !drawing;
+     
+                    // Advance the current edge
+                    curBound_it++;
+                
+                    // Check to see if we're at the last edge
+                    if(curBound_it == aet.end())
+                    {
+                        break;
+                    }
+                }
             
-            // If we've moved past the top of the global edge table, break out
-            // of the scan conversion
-            if(get_it == get.end())
-                break;
-        }
+                if(drawing)
+                {
+                    setFramebuffer(curPixX, curPixY, color::white());
+                }
 
-        // Adjust edges in the aet for the new y value
-        list<edgedesc>::iterator aet_it = aet.begin();
-        for(; aet_it != aet.end(); aet_it++)
-        {
-            aet_it->xcur_frac += aet_it->slope_x;
-            aet_it->xcur += aet_it->xcur_frac / aet_it->slope_y;
-            aet_it->xcur_frac = aet_it->xcur_frac % aet_it->slope_y;
+                curPixX++;
+            }
+        
+            // Increment y by 1
+            curPixY++;
+
+            // Adjust edges in the aet for the new y value
+            list<edgedesc>::iterator aet_it = aet.begin();
+            for(; aet_it != aet.end(); aet_it++)
+            {
+                aet_it->xcur_frac += aet_it->slope_x;
+                aet_it->xcur += aet_it->xcur_frac / aet_it->slope_y;
+                aet_it->xcur_frac = aet_it->xcur_frac % aet_it->slope_y;
+            }
         }
     }
     
