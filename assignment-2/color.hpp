@@ -49,6 +49,9 @@ public:
     /// of 4 GLfloats.
     operator const GLfloat*() const;
 
+    /// Named color constructor for white
+    static color white();
+    
 private:
     float mComponents [4];
 };

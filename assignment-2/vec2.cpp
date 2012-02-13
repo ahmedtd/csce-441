@@ -41,4 +41,5 @@ vec2::operator const GLdouble*() const
 ostream& operator<<(ostream &out, const vec2 &rop)
 {
     out << "(" << rop.x() << ", " << rop.y() << ")";
+    return out;
 }

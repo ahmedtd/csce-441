@@ -1,10 +1,20 @@
 
 #include <algorithm>
+using std::copy;
 using std::fill;
+using std::max;
 using std::min;
+using std::replace_if;
+using std::sort;
+#include <cmath>
+using std::floor;
 #include <iostream>
 using std::cout;
 using std::endl;
+#include <list>
+using std::list;
+#include <map>
+using std::map;
 #include <vector>
 using std::vector;
 
@@ -16,8 +26,39 @@ using std::vector;
 int window_width(400);
 int window_height(400);
 
-vector<vector<vec2> > finished_polygons;
-vector<vec2> polygon_head;
+struct edgedesc
+{
+    int ymax;
+    int xcur;
+    int xcur_frac;
+    int slope_y;
+    int slope_x;
+};
+
+bool operator<(const edgedesc &lop, const edgedesc &rop)
+{
+    return lop.xcur < rop.xcur;
+}
+
+class edge_y_selector
+{
+public:
+    edge_y_selector(int yval)
+    :
+        m_yval(yval)
+    {
+    }
+    
+    bool operator() (const edgedesc &edge)
+    {
+        return m_yval == edge.ymax;
+    }
+
+private:
+    int m_yval;
+};
+
+vector<vector<vec2> > polygons(1);
 
 vector<color> pseudo_framebuffer(window_width * window_height);
 
@@ -34,10 +75,133 @@ void displayCallback()
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    color white(1.0, 1.0, 1.0, 1.0);
-    for(int count = 0; count < 100; count++)
+    // Build the global edge table
+    map<int, list<edgedesc> > get;
+    
+    // Iterate over all polygons
+    vector<vector<vec2> >::iterator polygon_it;
+    for(polygon_it = polygons.begin();
+        polygon_it != polygons.end();
+        polygon_it++)
     {
-        setFramebuffer(count, count, white);
+        // Check to make sure this polygon is displayable
+        if((*polygon_it).size() <= 2)
+            continue;
+
+        // Iterate over all edges of the polygon
+        vector<vec2>::iterator p1_it = (*polygon_it).end()--;
+        vector<vec2>::iterator p2_it = (*polygon_it).begin();
+        for(; p2_it != (*polygon_it).end(); p1_it++, p2_it++)
+        {
+            if(p1_it == (*polygon_it).end())
+                p1_it = (*polygon_it).begin();
+            
+            // TEST CODE
+            setFramebuffer(p2_it->x(), p2_it->y(), color::white());
+
+            // Unpack the relevant parameters of the edge
+            int minPixX = min(floor(p1_it->x()), floor(p2_it->x()));
+            int maxPixX = max(floor(p1_it->x()), floor(p2_it->y()));
+            int minPixY = min(floor(p1_it->y()), floor(p2_it->y()));
+            int maxPixY = max(floor(p1_it->y()), floor(p2_it->y()));
+            
+            int sign = 1;
+            if(p2_it->x() > p1_it->x())
+                if(p2_it->y() > p1_it->y())
+                    sign = 1;
+                else
+                    sign = -1;
+            else
+                if(p2_it->y() > p1_it->y())
+                    sign = -1;
+                else
+                    sign = 1;
+
+            // If this edge is horizontal in pixel coordinates, ignore it
+            if(minPixY == maxPixY)
+                continue;
+            
+            // Pack up this edge
+            edgedesc thisedge;
+            thisedge.ymax = maxPixY;
+            thisedge.xcur = minPixX;
+            thisedge.xcur_frac = 0;
+            thisedge.slope_x = sign * (maxPixX - minPixX);
+            thisedge.slope_y = maxPixY - minPixY;
+
+            // Put it in the global edge table
+            (get[minPixY]).push_back(thisedge);
+            get[minPixY].sort();
+        }
+    }
+
+    // Scan-convert from the global edge table
+    list<edgedesc> aet;
+    map<int, list<edgedesc> >::iterator get_it = get.begin();
+    int curPixY = get.begin()->first;
+    while(curPixY < window_height)
+    {
+        // If we're on a y value where edges begin or end
+        if(curPixY == get_it->first)
+        {
+            // Copy edges that start here to the active edge table
+            copy(get_it->second.begin(), get_it->second.end(), aet.begin());
+        
+            // Remove edges that end here
+            edge_y_selector selector(curPixY);
+            remove_if(aet.begin(), aet.end(), selector);
+            
+            aet.sort();
+        }
+      
+        // Draw the span at this range
+        list<edgedesc>::iterator curBound_it = aet.begin();
+        int curPixX = curBound_it->xcur;
+        curBound_it++;
+        bool drawing = true;
+        while(true)
+        {
+            // Have we reached a transition point?
+            if(curPixX == curBound_it->xcur)
+            {
+                drawing = !drawing;
+     
+                // Advance the current edge
+                curBound_it++;
+                
+                // Check to see if we're at the last edge
+                if(curBound_it == aet.end())
+                    break;
+            }
+            
+            if(drawing)
+            {
+                setFramebuffer(curPixX, curPixY, color::white());
+            }    
+        }
+        
+        // Increment y by 1
+        curPixY++;
+
+        // Increment the global edge table iterator
+        if(curPixY == get_it->first)
+        {
+            get_it++;
+            
+            // If we've moved past the top of the global edge table, break out
+            // of the scan conversion
+            if(get_it == get.end())
+                break;
+        }
+
+        // Adjust edges in the aet for the new y value
+        list<edgedesc>::iterator aet_it = aet.begin();
+        for(; aet_it != aet.end(); aet_it++)
+        {
+            aet_it->xcur_frac += aet_it->slope_x;
+            aet_it->xcur += aet_it->xcur_frac / aet_it->slope_y;
+            aet_it->xcur_frac = aet_it->xcur_frac % aet_it->slope_y;
+        }
     }
     
     // Draw the pseudo-framebuffer
@@ -62,18 +226,9 @@ void reshapeCallback(int new_width, int new_height)
          << new_width << ", " << new_height
          << ")" << endl;
     
-    // Update the pseudo-framebuffer to reflect the new size
-    vector<color> new_framebuffer(new_width*new_height);
-    for(int r_ind = 0; r_ind < min(new_height, window_height); r_ind++)
-    {
-        for(int c_ind = 0; c_ind < min(new_width, window_width); c_ind++)
-        {
-            new_framebuffer[r_ind*new_width + c_ind] =
-                pseudo_framebuffer[r_ind*window_width + c_ind];            
-        }
-    }
-    pseudo_framebuffer = new_framebuffer;
-    
+    color trans_black;
+    pseudo_framebuffer.resize(new_width*new_height, trans_black);
+
     // Update the global information on the window shape
     window_width  = new_width;
     window_height = new_height;
@@ -99,7 +254,7 @@ void mouseClickCallback(int button, int state, int x, int y)
     // Are we adding a vertex to a polygon?
     if(button == GLUT_LEFT_BUTTON && state == GLUT_UP)
     {
-        polygon_head.push_back(position);
+        polygons.back().push_back(position);
         
         cout << "New vertex added: " << position << endl;
     }
@@ -108,14 +263,14 @@ void mouseClickCallback(int button, int state, int x, int y)
     else if(button == GLUT_RIGHT_BUTTON && state == GLUT_UP)
     {
         // Add the current location as a vertex of the current polygon
-        polygon_head.push_back(vec2(x, y));
+        polygons.back().push_back(position);
         
         // Check if the polygon has at least three vertices
-        if(polygon_head.size() >= 3)
+        if(polygons.back().size() >= 3)
         {
-            finished_polygons.push_back(polygon_head);
-            polygon_head.clear();
-                        
+            vector<vec2> empty;
+            polygons.push_back(empty);
+                                    
             cout << "Polygon closed: " << position  << endl;
         }
         else
@@ -125,6 +280,7 @@ void mouseClickCallback(int button, int state, int x, int y)
         
     }
     
+    glutPostRedisplay();
 }
 
 void mouseDragCallback(int x, int y)
@@ -163,6 +319,8 @@ int main(int argc, char** argv)
     glutMotionFunc(        mouseDragCallback);
     glutPassiveMotionFunc( mouseMoveCallback);
     glutKeyboardFunc(      keyboardCallback);
+
+    // Set up our first polygon
 
 	glutMainLoop();
 	return 0;

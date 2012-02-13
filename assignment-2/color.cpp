@@ -70,6 +70,11 @@ color::operator const GLfloat*() const
     return static_cast<const GLfloat*>(mComponents);
 }
 
+color color::white()
+{
+    return color(1.0,1.0,1.0,1.0);
+}
+
 ostream& operator<<(ostream &out, const color &rop)
 {
     out << "[r" << rop.r()
