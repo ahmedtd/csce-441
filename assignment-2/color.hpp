@@ -51,6 +51,9 @@ public:
 
     /// Named color constructor for white
     static color white();
+
+    /// Named color constructor for a random color
+    static color random();
     
 private:
     float mComponents [4];

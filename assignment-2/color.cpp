@@ -1,6 +1,9 @@
 
 #include "color.hpp"
 
+#include <cstdlib>
+using std::rand;
+
 color::color()
 {
     mComponents[0] = 0.0;
@@ -73,6 +76,14 @@ color::operator const GLfloat*() const
 color color::white()
 {
     return color(1.0,1.0,1.0,1.0);
+}
+
+color color::random()
+{
+    return color( ((float) rand()) / RAND_MAX, 
+                  ((float) rand()) / RAND_MAX,
+                  ((float) rand()) / RAND_MAX,
+                  1.0 );
 }
 
 ostream& operator<<(ostream &out, const color &rop)
