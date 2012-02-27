@@ -20,4 +20,9 @@ void init ( void )
 
 	setIATTransformations ( iat );
 
+    vector<Pt> cst;
+    cst.push_back( Pt(0.0, 0.0));
+    cst.push_back( Pt(0.0, 1.0));
+    
+    setCondensationSet(cst);
 }

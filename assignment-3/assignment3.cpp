@@ -2,27 +2,31 @@
 #include <cmath>
 using std::sin;
 using std::cos;
+using std::sqrt;
+#include <deque>
+using std::deque;
+#include <map>
+using std::pair;
 
 #include <GL/glut.h>
-#include "assignment3.hpp"
+#include "assignment3.h"
 #include "init.h"
 
 #include "mat.hpp"
 
 // Global variables
-int progmode = 0;
 vector<floatmat> defaultCondensation;
 vector<floatmat> defaultTransforms;
-int defaultDepth;
+int defaultDepth = 8;
 
 Matrix translate ( Vec v )
 {
     floatmat result(floatmat::eye(3));
 
-    result(0,2) = v.x;
-    result(1,2) = v.y;
+    result.at(0,2) = v.x;
+    result.at(1,2) = v.y;
     
-	return result;
+	return result.asMatrix();
 }
 
 Matrix rotate ( Pt p, float theta )
@@ -34,35 +38,35 @@ Matrix rotate ( Pt p, float theta )
     floatmat pmat(p, false);
 
     floatmat rotate(2,2);
-    rotate(0,0) = cosv;
-    rotate(0,1) = sinv;
-    rotate(1,0) = -sinv;
-    rotate(1,1) = cosv;
+    rotate.at(0,0) = cosv;
+    rotate.at(0,1) = sinv;
+    rotate.at(1,0) = -sinv;
+    rotate.at(1,1) = cosv;
 
     floatmat offset = (rotate * -1.0f) * pmat;
     
-    result(0,0) = rotate(0,0);
-    result(0,1) = rotate(0,1);
-    result(1,0) = rotate(1,0);
-    result(1,1) = rotate(1,1);
+    result.at(0,0) = rotate.at(0,0);
+    result.at(0,1) = rotate.at(0,1);
+    result.at(1,0) = rotate.at(1,0);
+    result.at(1,1) = rotate.at(1,1);
 
-    result(0,2) = offset(0,0);
-    result(1,2) = offset(1,0);
+    result.at(0,2) = offset.at(0,0);
+    result.at(1,2) = offset.at(1,0);
 
-	return result;
+	return result.asMatrix();
 }
 
 Matrix scale ( Pt p, float alpha )
 {
 	floatmat result = floatmat::eye(3);
     
-    floatmat(0,0) = alpha;
-    floatmat(1,1) = alpha;
+    result.at(0,0) = alpha;
+    result.at(1,1) = alpha;
     
-    floatmat(0,2) = -alpha * p.x;
-    floatmat(0,2) = -alpha * p.y;
+    result.at(0,2) = (1.0-alpha) * p.x;
+    result.at(1,2) = (1.0-alpha) * p.y;
 
-	return result;
+    return result.asMatrix();
 }
 
 Matrix nscale ( Pt p, Vec v, float alpha )
@@ -78,42 +82,42 @@ Matrix nscale ( Pt p, Vec v, float alpha )
     floatmat addcomponent = ndir * ndir.transpose() * pmat * (1-alpha);
     
     floatmat result = floatmat::eye(3);
-    result(0,0) = multcomponent(0,0);
-    result(0,1) = multcomponent(0,1);
-    result(1,0) = multcomponent(1,0);
-    result(1,1) = multcomponent(1,1);
+    result.at(0,0) = multcomponent.at(0,0);
+    result.at(0,1) = multcomponent.at(0,1);
+    result.at(1,0) = multcomponent.at(1,0);
+    result.at(1,1) = multcomponent.at(1,1);
     
-    result(0,2) = addcomponent(0,0);
-    result(1,2) = addcomponent(1,2);
+    result.at(0,2) = addcomponent.at(0,0);
+    result.at(1,2) = addcomponent.at(1,2);
     
-	return result;
+	return result.asMatrix();
 }
 
 Matrix image ( Pt p1, Pt p2, Pt p3, Pt q1, Pt q2, Pt q3 )
 {
 	floatmat src(3,3);
-    src(0,0) = p1.x;
-    src(0,1) = p2.x;
-    src(0,2) = p3.x;
-    src(1,0) = p1.y;
-    src(1,1) = p2.y;
-    src(1,2) = p3.y;
-    src(2,0) = 1.0f;
-    src(2,1) = 1.0f;
-    src(2,2) = 1.0f;
+    src.at(0,0) = p1.x;
+    src.at(0,1) = p2.x;
+    src.at(0,2) = p3.x;
+    src.at(1,0) = p1.y;
+    src.at(1,1) = p2.y;
+    src.at(1,2) = p3.y;
+    src.at(2,0) = 1.0f;
+    src.at(2,1) = 1.0f;
+    src.at(2,2) = 1.0f;
 
     floatmat hat(3,3);
-    hat(0,0) = q1.x;
-    hat(0,1) = q2.x;
-    hat(0,2) = q3.x;
-    hat(1,0) = q1.y;
-    hat(1,1) = q2.y;
-    hat(1,2) = q3.y;
-    hat(2,0) = 1.0f;
-    hat(2,1) = 1.0f;
-    hat(2,2) = 1.0f;
+    hat.at(0,0) = q1.x;
+    hat.at(0,1) = q2.x;
+    hat.at(0,2) = q3.x;
+    hat.at(1,0) = q1.y;
+    hat.at(1,1) = q2.y;
+    hat.at(1,2) = q3.y;
+    hat.at(2,0) = 1.0f;
+    hat.at(2,1) = 1.0f;
+    hat.at(2,2) = 1.0f;
 
-	return hat * src.inverse3();
+	return (hat * src.inverse3()).asMatrix();
 }
 
 Matrix compose ( Matrix m2, Matrix m1 )
@@ -121,7 +125,7 @@ Matrix compose ( Matrix m2, Matrix m1 )
 	floatmat mat2(m2);
     floatmat mat1(m1);
 
-	return mat2 * mat1;
+	return (mat2 * mat1).asMatrix();
 }
 
 void setCondensationSet ( vector<Pt> pts )
@@ -154,14 +158,14 @@ void drawfractal( const vector<floatmat> &condensation_set,
                   int maxDepth)
 {
     floatmat color_comps(3,1);
-    color_comps(0,0) = 0.9f;
-    color_comps(1,0) = 0.9f;
-    color_comps(2,0) = 0.0f;
+    color_comps.at(0,0) = 0.5f;
+    color_comps.at(1,0) = 0.5f;
+    color_comps.at(2,0) = 1.0f;
 
     floatmat origin(3,1);
-    origin(0,0) = 0.0f;
-    origin(1,0) = 0.0f;
-    origin(2,0) = 1.0f;
+    origin.at(0,0) = 0.0f;
+    origin.at(1,0) = 0.0f;
+    origin.at(2,0) = 1.0f;
 
     // The int is the depth of evaluation, the matrix is the transform at that
     // level.
@@ -169,18 +173,23 @@ void drawfractal( const vector<floatmat> &condensation_set,
 
     // Prime the affine transform queue
     vector<floatmat>::const_iterator at_it = transforms.begin();
-    for(; at_it != transforms.end(); at_it++)
-    {
-        pair<int, floatmat> newframe;
-        newframe.first = 0;
-        newframe.second = *at_it;
-        atQueue.push_back(newframe);
-    }
+    // for(; at_it != transforms.end(); at_it++)
+    // {
+    //     pair<int, floatmat> newframe;
+    //     newframe.first = 0;
+    //     newframe.second = *at_it;
+    //     atQueue.push_back(newframe);
+    // }
+
+    pair<int, floatmat> baseframe;
+    baseframe.first = 0;
+    baseframe.second = floatmat::eye(3);
+    atQueue.push_back(baseframe);
 
     // Traverse the fractal
     while(atQueue.size() != 0)
     {
-        pair<int, floatmat> frame = qtQueue.front();
+        pair<int, floatmat> frame = atQueue.front();
         atQueue.pop_front();
 
         // Get the color at this depth
@@ -189,10 +198,10 @@ void drawfractal( const vector<floatmat> &condensation_set,
 
         // Render the condensation set
         vector<floatmat>::const_iterator cond_it = condensation_set.begin();
-        if(condensation_set.length() == 1)
+        if(condensation_set.size() == 1)
         {
             glBegin(GL_POINTS);
-            glVertex2fv(*cond_it);
+            glVertex2fv(frame.second*(*cond_it));
             glEnd();
         }
         else
@@ -200,8 +209,9 @@ void drawfractal( const vector<floatmat> &condensation_set,
             glBegin(GL_LINE_STRIP);
             for(; cond_it != condensation_set.end(); cond_it++)
             {
-                glVertex2fv(*cond_it);
+                glVertex2fv(frame.second*(*cond_it));
             }
+            glVertex2fv(frame.second*condensation_set[0]);
             glEnd();
         }
         
@@ -255,29 +265,144 @@ void keyboard( unsigned char key, int x, int y)
     switch(key)
     {
     case '1':
+    {
+        // Set up fractal hangman
+
+        defaultTransforms.clear();
+        defaultCondensation.clear();
+
+        Pt A(0.9, 0.9);
+        Pt B(0.9, -0.9);
+        Pt C(-0.9, -0.9);
+
+        Pt a1(0.0, 0.9);
+        Pt b1(0.9, 0.9);
+        Pt c1(0.9, 0.0);
+
+        Pt a2(0.9, 0.0);
+        Pt b2(0.9, -0.9);
+        Pt c2(0.0, -0.9);
+
+        Pt a3(0.0, 0.0);
+        Pt b3(0.0, -0.9);
+        Pt c3(-0.9, -0.9);
+
+        defaultTransforms.push_back(image(A, B, C, a1, b1, c1));
+        defaultTransforms.push_back(image(A, B, C, a2, b2, c2));
+        defaultTransforms.push_back(image(A, B, C, a3, b3, c3));
+
         break;
+    }
     case '2':
+    {
+        // Set up fractal staircase
+
+        defaultTransforms.clear();
+        defaultCondensation.clear();
+
+        Pt a(-0.9, 0.9);
+        Pt b(-0.9, 0.0);
+        Pt c(-0.9, -0.9);
+
+        Pt d(0.0, 0.0);
+        Pt e(0.0, -0.9);
+        Pt f(0.9, -0.9);
+        
+        defaultTransforms.push_back(image(a, c, f, a, b, d));
+        defaultTransforms.push_back(image(a, c, f, d, e, f));
+
+        defaultCondensation.push_back(b);
+        defaultCondensation.push_back(c);
+        defaultCondensation.push_back(e);
+        defaultCondensation.push_back(d);
+        
         break;
+    }
     case '3':
+    {
+        // Set up fractal snowflake
+        
+        defaultTransforms.clear();
+        defaultCondensation.clear();
+        
+        // Unit pentagonal coordinates from Wolfram Mathworld
+
+        float pi  = 4*atan(1);
+        float phi = 0.5 * (1.0 + sqrt(5.0));
+        float c1 = 0.9*cos(2.0*pi/5.0);
+        float c2 = 0.9*cos(pi / 5.0);
+        float s1 = 0.9*sin(2.0*pi/5.0);
+        float s2 = 0.9*sin(4.0*pi/5.0);
+
+        Pt a(  0,  0.9);
+        Pt b(-s1,  c1);
+        Pt c(-s2, -c2);
+        Pt d( s2, -c2);
+        Pt e( s1,  c1);
+        Pt f( 0.0, 0.0);
+
+        float scaleFactor = 1.0/(1.0+phi);
+
+        defaultTransforms.push_back(scale(a, scaleFactor));
+        defaultTransforms.push_back(scale(b, scaleFactor));
+        defaultTransforms.push_back(scale(c, scaleFactor));
+        defaultTransforms.push_back(scale(d, scaleFactor));
+        defaultTransforms.push_back(scale(e, scaleFactor));
+        defaultTransforms.push_back(scale(f, -scaleFactor));
+                
         break;
+    }
     case '4':
+    {
+        // Set up hex flower
+        
+        float pi = 4*atan(1);
+        float fc = 0.9*cos(pi/3.0);
+        float fs = 0.9*sin(pi/3.0);
+
+        Pt a(0.9, 0.0);
+        Pt b(fc, fs);
+        Pt c(-fc, fs);
+        Pt d(-0.9, 0.0);
+        Pt e(-fc, -fs);
+        Pt f(fc, -fs);
+
+        float scaleFactor = 1.0/3.0;
+
+        defaultTransforms.clear();
+        defaultCondensation.clear();
+
+        defaultTransforms.push_back(scale(a, scaleFactor));
+        defaultTransforms.push_back(scale(b, scaleFactor));
+        defaultTransforms.push_back(scale(c, scaleFactor));
+        defaultTransforms.push_back(scale(d, scaleFactor));
+        defaultTransforms.push_back(scale(e, scaleFactor));
+        defaultTransforms.push_back(scale(f, scaleFactor));
+                
         break;
+    }
     case '5':
         break;
     case '6':
         break;
     case '=':
     case '+':
+        defaultDepth++;
+        defaultDepth = (defaultDepth > 10) ? 10 : defaultDepth;
         break;
     case '-':
     case '_':
+        defaultDepth--;
+        defaultDepth = (defaultDepth < 0) ? 0 : defaultDepth;
         break;
-    }   
+    }
+
+    glutPostRedisplay();
 }
 
 int main ( int argc, char** argv )
 {
-	glutInit ( &argc, argv );
+    glutInit ( &argc, argv );
 	glutInitDisplayMode ( GLUT_SINGLE | GLUT_RGB );
 	glutInitWindowSize ( 500, 500 );
 	glutInitWindowPosition ( 100, 100 );
@@ -285,7 +410,7 @@ int main ( int argc, char** argv )
 	init ( );	
 	glutDisplayFunc ( display );
 	glutReshapeFunc ( reshape );
-    glutKeyBoardFunc(keyboard);
+    glutKeyboardFunc(keyboard);
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
 

@@ -2,12 +2,16 @@
 #ifndef MAT
 #define MAT
 
+#include <iostream>
+using std::endl;
+#include <ostream>
+using std::ostream;
 #include <vector>
 using std::vector;
 
 #include <GL/glut.h>
 
-#include "assignment3.hpp"
+#include "assignment3.h"
 
 class floatmat
 {
@@ -19,18 +23,20 @@ public:
 
     floatmat(const Matrix &raw);
 
-    floatmat(const Pt &raw, bool homog=true);
+    floatmat(const Pt &raw, bool homog = true, float hcoord = 1.0f);
 
-    floatmat(const Vec &raw, bool homog=true);
-  
     // Construct an identity matrix of dimension dim*dim
     static floatmat eye(int dim);
   
     // Access the element at r*c
-    float& operator()(int r, int c);
+    //float& operator()(int r, int c);
 
     // Constant access
-    const float& operator()(int r, int c) const;
+    //float operator()(int r, int c) const;
+
+    float& at(int r, int c);
+
+    float at(int r, int c) const;
 
     // Matrix multiplication operator.
     floatmat operator*(const floatmat &rop) const;
@@ -54,16 +60,22 @@ public:
     int c() const;
 
     // Allows interpretation as a pointer to GLdouble array
-    operator const GLdouble*() const;
+    operator const GLfloat*() const;
 
     // Allows interpretation as a Matrix class
-    operator const Matrix() const;
+    Matrix asMatrix() const;
     
     // Get inverse of matrix
     floatmat inverse3() const;
 
 private:
+    int mR;
+    int mC;
     vector<float> mFloats;
-    int    mR;
-    int    mC;
 };
+
+ostream& operator<<(ostream &out, const floatmat &mat);
+
+ostream& operator<<(ostream &out, const Matrix &mat);
+
+#endif
