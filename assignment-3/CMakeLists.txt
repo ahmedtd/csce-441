@@ -16,6 +16,6 @@ if (GLUT_FOUND)
    include_directories (${GLUT_INCLUDE_DIR})
 endif (GLUT_FOUND)
 
-add_executable (scan-convert scan-convert.cpp color.cpp vec2.cpp)
-target_link_libraries (scan-convert ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
+add_executable (assignment3 assignment3.cpp init.cpp mat.cpp)
+target_link_libraries (assignment3 ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 

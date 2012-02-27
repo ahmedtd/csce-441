@@ -12,12 +12,12 @@
 void init ( void )
 {
 	// example code to create a Sierpinski Gasket
-/*
+
 	vector<Matrix> iat;
 	iat.push_back ( scale ( Pt ( -.9, -.9 ), 0.5 ) );
 	iat.push_back ( scale ( Pt ( .9, -.9 ), 0.5 ) );
 	iat.push_back ( scale ( Pt ( 0, .56 ), 0.5 ) );
 
 	setIATTransformations ( iat );
-*/
+
 }
