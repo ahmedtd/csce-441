@@ -446,6 +446,15 @@ void reshapeCallback(int new_width, int new_height)
     // Update the global information on the window shape
     window_width  = new_width;
     window_height = new_height;
+
+    if(!clip_mode)
+    {
+        clip_tl.x(0);
+        clip_tl.y(window_height);
+
+	clip_br.x(window_width);
+	clip_br.y(0);
+    }
     
     // Update the projection matrix to account for the window shape
     glMatrixMode(GL_PROJECTION);
