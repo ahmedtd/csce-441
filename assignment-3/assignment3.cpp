@@ -382,7 +382,32 @@ void keyboard( unsigned char key, int x, int y)
         break;
     }
     case '5':
+    {
+        Pt pta( 0.9,  0.9);
+        Pt ptb( 0.9, -0.9);
+        Pt ptc(-0.9, -0.9);
+        Pt ptd(-0.9,  0.9);
+
+        floatmat rot1 = rotate(pta, 0.05);
+        floatmat rot2 = rotate(ptb, 0.05);
+        floatmat rot3 = rotate(ptc, -0.05);
+        floatmat rot4 = rotate(ptd, -0.05);
+        
+        floatmat scale1 = scale(pta, 0.5);
+        floatmat scale2 = scale(ptb, 0.5);
+        floatmat scale3 = scale(ptc, 0.5);
+        floatmat scale4 = scale(ptd, 0.5);
+
+        defaultTransforms.clear();
+        defaultCondensation.clear();
+
+        defaultTransforms.push_back(scale1*rot1);
+        defaultTransforms.push_back(scale2*rot2);
+        defaultTransforms.push_back(scale3*rot3);
+        defaultTransforms.push_back(scale4*rot4);
+
         break;
+    }
     case '6':
         break;
     case '=':
