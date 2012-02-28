@@ -268,6 +268,7 @@ void keyboard( unsigned char key, int x, int y)
     {
         // Set up fractal hangman
 
+        defaultDepth = 10;
         defaultTransforms.clear();
         defaultCondensation.clear();
 
@@ -296,6 +297,8 @@ void keyboard( unsigned char key, int x, int y)
     case '2':
     {
         // Set up fractal staircase
+
+        defaultDepth = 10;
 
         defaultTransforms.clear();
         defaultCondensation.clear();
@@ -341,6 +344,8 @@ void keyboard( unsigned char key, int x, int y)
         Pt e( s1,  c1);
         Pt f( 0.0, 0.0);
 
+        defaultDepth = 7;
+
         float scaleFactor = 1.0/(1.0+phi);
 
         defaultTransforms.push_back(scale(a, scaleFactor));
@@ -369,6 +374,8 @@ void keyboard( unsigned char key, int x, int y)
 
         float scaleFactor = 1.0/3.0;
 
+        defaultDepth = 7;
+
         defaultTransforms.clear();
         defaultCondensation.clear();
 
@@ -383,33 +390,73 @@ void keyboard( unsigned char key, int x, int y)
     }
     case '5':
     {
-        Pt pta( 0.9,  0.9);
-        Pt ptb( 0.9, -0.9);
-        Pt ptc(-0.9, -0.9);
-        Pt ptd(-0.9,  0.9);
-
-        floatmat rot1 = rotate(pta, 0.05);
-        floatmat rot2 = rotate(ptb, 0.05);
-        floatmat rot3 = rotate(ptc, -0.05);
-        floatmat rot4 = rotate(ptd, -0.05);
+        Pt pta(-0.8,  0.4);
+        Pt ptb(-0.8, -0.4);
         
-        floatmat scale1 = scale(pta, 0.5);
-        floatmat scale2 = scale(ptb, 0.5);
-        floatmat scale3 = scale(ptc, 0.5);
-        floatmat scale4 = scale(ptd, 0.5);
+        Pt ptc(-0.4,  0.8);
+        Pt ptd(-0.4,  0.4);
+        Pt pte(-0.4,  0.0);
+        Pt ptf(-0.4, -0.4);
+        Pt ptg(-0.4, -0.8);
+        
+        Pt pth(0.0,  0.4);
+        Pt pti(0.0, -0.4);
+        
+        Pt ptj(0.4,  0.8);
+        Pt ptk(0.4,  0.4);
+        Pt ptl(0.4,  0.0);
+        Pt ptm(0.4, -0.4);
+        Pt ptn(0.4, -0.8);
 
+        Pt pto(0.8,  0.4);
+        Pt ptp(0.8, -0.4);
+
+        defaultDepth = 5;
+        
         defaultTransforms.clear();
         defaultCondensation.clear();
 
-        defaultTransforms.push_back(scale1*rot1);
-        defaultTransforms.push_back(scale2*rot2);
-        defaultTransforms.push_back(scale3*rot3);
-        defaultTransforms.push_back(scale4*rot4);
+        defaultTransforms.push_back(scale(pta, 0.2));
+        defaultTransforms.push_back(scale(ptb, 0.2));
+        defaultTransforms.push_back(scale(ptc, 0.2));
+        defaultTransforms.push_back(scale(ptd, 0.2));
+        defaultTransforms.push_back(scale(pte, 0.2));
+        defaultTransforms.push_back(scale(ptf, 0.2));
+        defaultTransforms.push_back(scale(ptg, 0.2));
+        defaultTransforms.push_back(scale(pth, 0.2));
+        defaultTransforms.push_back(scale(pti, 0.2));
+        defaultTransforms.push_back(scale(ptj, 0.2));
+        defaultTransforms.push_back(scale(ptk, 0.2));
+        defaultTransforms.push_back(scale(ptl, 0.2));
+        defaultTransforms.push_back(scale(ptm, 0.2));
+        defaultTransforms.push_back(scale(ptn, 0.2));
+        defaultTransforms.push_back(scale(pto, 0.2));
+        defaultTransforms.push_back(scale(ptp, 0.2));
 
         break;
     }
     case '6':
+    {
+        defaultDepth = 8;
+        defaultTransforms.clear();
+        defaultCondensation.clear();
+
+        float pi  = 4*atan(1);
+        Pt origin(0.0, 0.0);
+
+        int numsectors = 5;
+        
+        for(int sector = 0; sector < numsectors; sector++)
+        {
+            floatmat rotmat = rotate(origin, sector*2.0*pi/numsectors);
+            floatmat scalmat = scale(origin, 0.5);
+            floatmat tranmat = translate(Vec(sector*1.75/numsectors, 0.0));
+
+            defaultTransforms.push_back(scalmat*rotmat*tranmat);
+        }
+
         break;
+    }
     case '=':
     case '+':
         defaultDepth++;
