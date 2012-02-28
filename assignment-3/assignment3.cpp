@@ -1,5 +1,6 @@
 
 #include <cmath>
+using std::atan;
 using std::sin;
 using std::cos;
 using std::sqrt;
@@ -15,8 +16,8 @@ using std::pair;
 #include "mat.hpp"
 
 // Global variables
-vector<floatmat> defaultCondensation;
-vector<floatmat> defaultTransforms;
+vector<floatmat> defaultCondensation(1);
+vector<floatmat> defaultTransforms(1);
 int defaultDepth = 8;
 
 Matrix translate ( Vec v )
@@ -204,7 +205,7 @@ void drawfractal( const vector<floatmat> &condensation_set,
             glVertex2fv(frame.second*(*cond_it));
             glEnd();
         }
-        else
+        else if(condensation_set.size() > 1)
         {
             glBegin(GL_LINE_STRIP);
             for(; cond_it != condensation_set.end(); cond_it++)
@@ -330,7 +331,7 @@ void keyboard( unsigned char key, int x, int y)
         
         // Unit pentagonal coordinates from Wolfram Mathworld
 
-        float pi  = 4*atan(1);
+        float pi  = 4*atan(1.0);
         float phi = 0.5 * (1.0 + sqrt(5.0));
         float c1 = 0.9*cos(2.0*pi/5.0);
         float c2 = 0.9*cos(pi / 5.0);
@@ -361,7 +362,7 @@ void keyboard( unsigned char key, int x, int y)
     {
         // Set up hex flower
         
-        float pi = 4*atan(1);
+        float pi = 4*atan(1.0);
         float fc = 0.9*cos(pi/3.0);
         float fs = 0.9*sin(pi/3.0);
 
@@ -441,7 +442,7 @@ void keyboard( unsigned char key, int x, int y)
         defaultTransforms.clear();
         defaultCondensation.clear();
 
-        float pi  = 4*atan(1);
+        float pi  = 4*atan(1.0);
         Pt origin(0.0, 0.0);
 
         int numsectors = 5;

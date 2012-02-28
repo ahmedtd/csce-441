@@ -1,6 +1,6 @@
 
 cmake_minimum_required (VERSION 2.6)
-project (assignment-2)
+project (assignment-3)
 
 # Check the system for OpenGL
 include (FindOpenGL)
