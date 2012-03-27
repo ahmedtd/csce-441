@@ -14,6 +14,8 @@ if (GLUT_FOUND)
    include_directories (${GLUT_INCLUDE_DIR})
 endif (GLUT_FOUND)
 
-add_executable (assignment4 rasterize.cpp)
+set(CMAKE_CXX_FLAGS "-Wall -g --pedantic")
+
+add_executable (assignment4 rasterize.cpp model.cpp)
 target_link_libraries (assignment4 ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES})
 

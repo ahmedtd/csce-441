@@ -5,7 +5,10 @@
 
 // The Eigen library is used for matrix operations
 
-
+#include <algorithm>
+using std::fill;
+#include <fstream>
+using std::ifstream;
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -17,37 +20,37 @@ using std::vector;
 #include "Eigen/Dense"
 using Eigen::Array;
 using Eigen::Vector4f;
+using Eigen::Vector3f;
 using Eigen::Matrix;
-#include "Eigen/StdVector"
-EIGEN_DEFINE_STL_VECTOR_SPECIALIZATION(Vector4f)
+
+#include "eigendef.hpp"
 
 #include <GL/glut.h>
+
+#include "model.hpp"
 
 int window_width(400);
 int window_height(400);
 
-Vector4f zero_vector(0.0, 0.0, 0.0, 0.0);
-Vector4f neginf_vector(-std::numeric_limits<double>::infinity(),
-                       -std::numeric_limits<double>::infinity(),
-                       -std::numeric_limits<double>::infinity(),
-                       -std::numeric_limits<double>::infinity());
+Vector4f opaque_black(0.0, 0.0, 0.0, 1.0);
+Vector4f opaque_red(1.0, 0.0, 0.0, 1.0);
 
-vector<Vector4f> framebuffer(window_width*window_height, zero_vector);
-vector<Vector4f> auxbuffer(window_width*window_height, neginf_vector);
+vector<Vector4f> framebuffer(window_width*window_height, opaque_black);
+vector<float> auxbuffer(window_width*window_height,
+                        -std::numeric_limits<float>::infinity());
 
-Vector4f amblight_color(0.5, 0.5, 0.5, 1.0);
-
-Vector4f dirlight_color(1.0, 1.0, 1.0, 1.0);
-Vector4f dirlight_dir(-1.0, -1.0, 1.0, 0.0);
-
-Vector4f mat_ambient(0.1, 0.0, 0.0, 0.0);
-Vector4f mat_diffuse(0.7, 0.0, 0.0, 0.0);
-Vector4f mat_specular(0.5, 0.5, 0.5, 0.5);
-double   mat_exponent(5.0);
+model *themodel;
 
 void displayCallback()
 {
     glClear(GL_COLOR_BUFFER_BIT);
+
+    fill(framebuffer.begin(), framebuffer.end(), opaque_black);
+    fill(auxbuffer.begin(),
+         auxbuffer.end(),
+         std::numeric_limits<float>::infinity());
+
+    themodel->render(framebuffer, auxbuffer);
 
     glDrawPixels(window_width,
                  window_height,
@@ -63,16 +66,24 @@ void reshapeCallback(int new_width, int new_height)
     window_width = new_width;
     window_height = new_height;
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glViewPort(0, 0, window_width, window_height);
+    framebuffer.resize(window_width*window_height,
+                       opaque_black);
+    auxbuffer.resize(window_width*window_height,
+                     std::numeric_limits<float>::infinity());
 
     glFlush();
+}
+
+void keyboardCallback(unsigned char key, int x, int y)
+{
+    if(key == '1')
+        themodel->mRenderMode = flat;
+    else if(key == '2')
+        themodel->mRenderMode = pervertex;
+    else if(key == '3')
+        themodel->mRenderMode = perpixel;
+
+    glutPostRedisplay();
 }
 
 int main(int argc, char **argv)
@@ -83,14 +94,17 @@ int main(int argc, char **argv)
 
     glutCreateWindow("Taahir Ahmed - Assignment 4");
 
-    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glClearColor(0.0, 1.0, 0.0, 0.0);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     
     glutDisplayFunc(displayCallback);
     glutReshapeFunc(reshapeCallback);
-    //glutKeyboardFunc(keyboardCallbac);
+    glutKeyboardFunc(keyboardCallback);
+
+    ifstream modelstream(argv[1]);
+    themodel = new model(modelstream);
 
     glutMainLoop();
     return 0;
