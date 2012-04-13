@@ -1,11 +1,14 @@
 
 #include <cmath>
 using std::pow;
+using std::sqrt;
 #include <iostream>
 using std::cout;
+using std::endl;
 
 #include <armadillo>
 using arma::dot;
+using arma::norm;
 
 #include "sphere.hpp"
 
@@ -13,10 +16,11 @@ sphere::sphere(const vec &position, double radius)
 :
     mPosition(position),
     mRadius(radius)
+    //mMat(mat)
 {
 }
 
-set<double> sphere::intersect(const ray &viewer)
+set<intersection> sphere::intersect(const ray &viewer)
 {   
     double dot_pp = dot(viewer.point, viewer.point);
     double dot_ps = dot(viewer.point, viewer.slope);
@@ -35,28 +39,72 @@ set<double> sphere::intersect(const ray &viewer)
 
     // If we have two solutions (handle the case of one solution as two really
     // close solutions)
-    if(det >= 0.0)
+    set<intersection> solset;
+    if(det >= 0.075)
     {
-        set<double> solutions;
-        solutions.insert((-b + pow(det, 0.5))/(2.0*a));
-        solutions.insert((-b - pow(det, 0.5))/(2.0*a));
+        intersection solution;
+        solution.target = this;
+
+        solution.paramval = (-b + pow(det, 0.5))/(2.0*a);
+        solution.surfpos = viewer.evaluate(solution.paramval);
+        solution.surfnorm = 2*solution.surfpos - 2*mPosition;
+        solution.surfnorm /= norm(solution.surfnorm, 2);
+        solset.insert(solution);
+
         
-        return solutions;
+        solution.paramval = (-b - pow(det, 0.5))/(2.0*a);
+        solution.surfpos = viewer.evaluate(solution.paramval);
+        solution.surfnorm = 2*solution.surfpos - 2*mPosition;
+        solution.surfnorm /= norm(solution.surfnorm, 2);
+        solset.insert(solution);
     }
-    else
+    else if(det < 0.075 && det >= 0.0)
     {
-        return (set<double>());
+        intersection solution;
+        solution.target = this;
+
+        solution.paramval = -b/(2.0*a);
+        solution.surfpos = viewer.evaluate(solution.paramval);
+        solution.surfnorm = 2*solution.surfpos - 2*mPosition;
+        solution.surfnorm /= norm(solution.surfnorm, 2);
+        solset.insert(solution);
     }
+    
+    return solset;
+
+    // vec ray_min_approach = dot((mPosition - viewer.point), viewer.slope)
+    //     * viewer.slope
+    //     / (dot(viewer.slope, viewer.slope));
+
+    // double ray_min_radius = norm(ray_min_approach,2);
+    
+    // set<intersection> solset;
+    // if(ray_min_radius < mRadius)
+    // {
+    //     double alpha = sqrt(pow(mRadius,2) - pow(ray_min_radius,2));
+        
+    //     solution.paramval
+    // }
+    
+    // return solset;
+        
 }
 
-intersection sphere::propogate(const ray &viewer,
-                               double parameter,
-                               const set<light> &lights,
-                               const set<renderable*> &renderables)
-{
-    // Return an ambient color
-    intersection info;
-    info.color = fvec("1 0 0 1");
+// fvec sphere::propogate(const ray &viewer,
+//                        const intersection &info,
+//                        const set<light*> &lights,
+//                        const set<renderable*> &renderables)
+// {
+//     // Get intersection position
+//     vec surfpos = viewer.evaluate(info.paramval);
 
-    return info;
-}
+//     // Get surface normal
+//     vec surfnorm = 2*surfpos - 2*mPosition;
+//     surfnorm /= norm(surfnorm, 2);
+
+//     return mMat.get_color(-viewer.slope,
+//                           surfpos,
+//                           surfnorm,
+//                           lights,
+//                           renderables);
+// }

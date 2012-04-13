@@ -3,11 +3,11 @@
 #define VECOPS
 
 #include <armadillo>
-using std::vec;
-using std::mat;
+using arma::vec;
+using arma::mat;
 
 mat crosspmatrix(vec in);
 
-mat rotmat(vec axis, double angle);
+mat rotmat(const vec &axis, double angle);
 
 #endif

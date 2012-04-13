@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
 project(assignment-5)
 
+set(CMAKE_CXX_FLAGS "--Wall --pedantic")
+
 # Check the system for Armadillo
 find_package(Armadillo REQUIRED)
 include_directories(${ARMADILLO_INCLUDE_DIRS})
@@ -21,7 +23,17 @@ endif (GLUT_FOUND)
 
 set(CMAKE_CXX_FLAGS "-Wall -g --pedantic")
 
-add_executable (raytrace raytrace.cpp sphere.cpp framebuffer.cpp)
+add_executable (raytrace raytrace.cpp
+                         sphere.cpp
+			 framebuffer.cpp
+			 vecops.cpp
+			 viewport.cpp
+			 ray.cpp
+			 scene.cpp
+			 renderable.cpp
+			 dirlight.cpp
+			 pointlight.cpp
+			 material_phong.cpp)
 target_link_libraries (raytrace ${OPENGL_LIBRARIES}
                                 ${GLUT_LIBRARIES}
                                 ${ARMADILLO_LIBRARIES})

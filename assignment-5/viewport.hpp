@@ -5,6 +5,8 @@
 #include <armadillo>
 using arma::vec;
 
+#include "ray.hpp"
+
 class viewport
 {
 public:
@@ -14,21 +16,21 @@ public:
              double hangle,
              double vangle);
 
-    vec ray(double row, double col, double width, double height);
+    ray genray(double row, double col, double width, double height);
 
 private:
-    vec &mEyepos;
-    vec &mEyeforward;
-    vec &mEyeup;
-    vec &mEyeRight;
+    vec mEyepos;
+    vec mEyeforward;
+    vec mEyeup;
+    vec mEyeright;
 
     double mHangle;
     double mVangle;
 
-    vec eyel;
-    vec eyer;
-    vec eyet;
-    vec eyeb;
+    vec mEyel;
+    vec mEyer;
+    vec mEyet;
+    vec mEyeb;
 };
 
 #endif

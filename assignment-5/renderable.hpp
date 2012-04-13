@@ -9,35 +9,30 @@ using std::set;
 using arma::vec;
 using arma::fvec;
 
-struct light
-{
-    vec position;
-};
+#include "ray.hpp"
+#include "light.hpp"
 
-struct ray
-{
-    vec point;
-    vec slope;
-};
+class renderable;
 
 struct intersection
 {
-    vec location;
-    fvec color;
-    vec normal;
-    vec reflected;
-    vec transmitted;
+    double paramval;
+    renderable *target;
+    vec surfpos;
+    vec surfnorm;
+
+    bool operator<(const intersection &rop) const;
 };
 
 class renderable
 {
 public:
-    virtual set<double> intersect(const ray &viewer) = 0;
+    virtual set<intersection> intersect(const ray &viewer) = 0;
 
-    virtual intersection propogate(const ray &viewer,
-                                   double parameterval,
-                                   const set<light> &lights,
-                                   const set<renderable*> &renderables) = 0;
+    // virtual fvec propogate(const ray &viewer,
+    //                        const intersection &info,
+    //                        const set<light*> &lights,
+    //                        const set<renderable*> &renderables) = 0;
 };
 
 #endif
