@@ -21,7 +21,7 @@ endif (GLUT_FOUND)
 
 set(CMAKE_CXX_FLAGS "-Wall -g --pedantic")
 
-add_executable (fractal-draw fractal-draw.cpp)
-target_link_libraries (fractal-draw ${OPENGL_LIBRARIES}
-                                    ${GLUT_LIBRARIES}
-                                    ${ARMADILLO_LIBRARIES})
+add_executable (raytrace raytrace.cpp sphere.cpp framebuffer.cpp)
+target_link_libraries (raytrace ${OPENGL_LIBRARIES}
+                                ${GLUT_LIBRARIES}
+                                ${ARMADILLO_LIBRARIES})

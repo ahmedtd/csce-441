@@ -12,7 +12,7 @@ public:
     virtual set<double> intersect(const ray &viewer);
 
     virtual intersection propogate(const ray &viewer,
-                                   double parameter,
+                                   double parameterval,
                                    const set<light> &lights,
                                    const set<renderable*> &renderables);
 private:

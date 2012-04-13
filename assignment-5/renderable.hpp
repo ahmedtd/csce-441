@@ -2,13 +2,17 @@
 #ifndef RENDERABLE
 #define RENDERABLE
 
+#include <set>
+using std::set;
+
 #include <armadillo>
-using std::vec;
+using arma::vec;
+using arma::fvec;
 
 struct light
 {
     vec position;
-}
+};
 
 struct ray
 {
@@ -19,7 +23,7 @@ struct ray
 struct intersection
 {
     vec location;
-    vec color;
+    fvec color;
     vec normal;
     vec reflected;
     vec transmitted;
@@ -33,7 +37,7 @@ public:
     virtual intersection propogate(const ray &viewer,
                                    double parameterval,
                                    const set<light> &lights,
-                                   const set<renderable*> renderables) = 0;
+                                   const set<renderable*> &renderables) = 0;
 };
 
 #endif
