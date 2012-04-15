@@ -32,7 +32,7 @@ void render_to_buffer()
 {
     scene testscene;
     
-    testscene.voidcolor() = fvec("0 0.1 0.5 1");
+    testscene.voidcolor() = fvec("0.0 0.0 0.0 1");
 
     dirlight light_a;
     
@@ -56,7 +56,7 @@ void render_to_buffer()
     material_phong mat_b(fvec("0.5 0.2 0.2"),
                          fvec("0.5 0.2 0.2"),
                          100.0,
-                         0.0,
+                         1.0,
                          0.0,
                          2.0);
                          
@@ -72,7 +72,7 @@ void render_to_buffer()
     testscene.materials()[&sphere_a] = &mat_a;
     
     testscene.renderables().insert(&sphere_b);
-    testscene.materials()[&sphere_b] = &mat_a;
+    testscene.materials()[&sphere_b] = &mat_b;
     
     testscene.renderables().insert(&sphere_c);
     testscene.materials()[&sphere_c] = &mat_a;
