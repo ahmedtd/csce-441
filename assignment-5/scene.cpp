@@ -15,54 +15,83 @@ void scene::render(framebuffer &target)
                                              target.width(),
                                              target.height());
 
+            set<intersection> root_intersections = cast_ray(initray);
+
             memcpy(target(row, col),
-                   sendray(initray, 10).memptr(),
+                   color_intersections(root_intersections, 10).memptr(),
                    sizeof(float)*4);
         }
     }
 }
 
-fvec scene::sendray(const ray &root, int depth) const
+set<intersection> scene::cast_ray(const ray &root) const
 {
     set<intersection> all_intersec;
-
+    
     // Get all intersections along this ray
-    set<renderable*>::iterator it = mRenderables.begin();
-    for(; it != mRenderables.end(); it++)
+    set<renderable*>::const_iterator geom_it = mRenderables.begin();
+    for(; geom_it != mRenderables.end(); geom_it++)
     {
-        set<intersection> this_intersec = (*it)->intersect(root);
+        set<intersection> this_intersec = (*geom_it)->intersect(root);
         
         all_intersec.insert(this_intersec.begin(), this_intersec.end());
     }
 
-    // Take the first intersection
-    intersection zero_key;
-    zero_key.paramval = 0.0;
-    set<intersection>::iterator intersec = all_intersec.lower_bound(zero_key);
+    // Find the first intersection, and all intersections beyond it within an
+    // epsilon
+    intersection trial_key;
+    set<intersection>::const_iterator intersec_lb, intersec_ub;
     
-    if(intersec == all_intersec.end())
+    trial_key.paramval = 0.0;
+    intersec_lb = all_intersec.lower_bound(trial_key);
+    
+    trial_key.paramval = intersec_lb->paramval + 0.0001;
+    intersec_ub = all_intersec.upper_bound(trial_key);
+
+    return (set<intersection>(intersec_lb, intersec_ub));
+}
+
+fvec scene::color_intersections(const set<intersection> &intersect_set,
+                                int depth) const
+{
+    // If there are no intersections, return the void color
+    if(intersect_set.size() == 0)
     {
         return mVoidColor;
     }
-    else
+
+    fvec pixcolor;
+    pixcolor.zeros(4);
+    
+    // Average the colors across all the intersections
+    set<intersection>::const_iterator intersect_it = intersect_set.begin();
+    for(; intersect_it != intersect_set.end(); intersect_it++)
     {
-        map<renderable*, material*>::const_iterator mat_it = mMaterials.begin();
-        mat_it = mMaterials.find(intersec->target);
-        
+        // Fetch the material in use by the renderable at the intersection
+        map<renderable*, material*>::const_iterator mat_it;
+        mat_it = mMaterials.find(intersect_it->target);
+
+        // If a material exists for the object, use it
         if(mat_it != mMaterials.end())
         {
-            return (*mat_it).second->get_color(-root.slope,
-                                               intersec->surfpos,
-                                               intersec->surfnorm,
-                                               *this,
-                                               depth);
+            pixcolor += (*mat_it).second->get_color(
+                -(intersect_it->generating_ray.slope),
+                intersect_it->generating_ray.evaluate(intersect_it->paramval),
+                intersect_it->surfnorm,
+                *this,
+                depth
+            );
         }
         else
         {
-            return fvec("1 0 0 1");
+            // If the renderable doesn't have an assigned material, give it
+            // red
+            pixcolor += fvec("1 0 0 1");
         }
-                                                       
-    }   
+    }
+    pixcolor /= (double) intersect_set.size();
+
+    return pixcolor;
 }
 
 set<renderable*>& scene::renderables()

@@ -46,15 +46,15 @@ set<intersection> sphere::intersect(const ray &viewer)
         solution.target = this;
 
         solution.paramval = (-b + pow(det, 0.5))/(2.0*a);
-        solution.surfpos = viewer.evaluate(solution.paramval);
-        solution.surfnorm = 2*solution.surfpos - 2*mPosition;
+        solution.generating_ray = viewer;
+        solution.surfnorm = 2*viewer.evaluate(solution.paramval) - 2*mPosition;
         solution.surfnorm /= norm(solution.surfnorm, 2);
         solset.insert(solution);
 
         
         solution.paramval = (-b - pow(det, 0.5))/(2.0*a);
-        solution.surfpos = viewer.evaluate(solution.paramval);
-        solution.surfnorm = 2*solution.surfpos - 2*mPosition;
+        solution.generating_ray = viewer;
+        solution.surfnorm = 2*viewer.evaluate(solution.paramval) - 2*mPosition;
         solution.surfnorm /= norm(solution.surfnorm, 2);
         solset.insert(solution);
     }
@@ -64,8 +64,8 @@ set<intersection> sphere::intersect(const ray &viewer)
         solution.target = this;
 
         solution.paramval = -b/(2.0*a);
-        solution.surfpos = viewer.evaluate(solution.paramval);
-        solution.surfnorm = 2*solution.surfpos - 2*mPosition;
+        solution.generating_ray = viewer;
+        solution.surfnorm = 2*viewer.evaluate(solution.paramval) - 2*mPosition;
         solution.surfnorm /= norm(solution.surfnorm, 2);
         solset.insert(solution);
     }

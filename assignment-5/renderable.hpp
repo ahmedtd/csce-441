@@ -17,8 +17,8 @@ class renderable;
 struct intersection
 {
     double paramval;
+    ray generating_ray;
     renderable *target;
-    vec surfpos;
     vec surfnorm;
 
     bool operator<(const intersection &rop) const;

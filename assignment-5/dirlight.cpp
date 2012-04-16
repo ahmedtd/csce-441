@@ -1,13 +1,23 @@
 
+#include <armadillo>
+using arma::norm;
+
 #include "dirlight.hpp"
 
-fvec dirlight::intensity(const vec &surfpos) const
+dirlight::dirlight(const vec &cast_direction, const fvec &intensity)
+:
+    m_intensity(intensity),
+    m_cast_direction(cast_direction)
 {
-    return fvec("1 1 1");
+    m_cast_direction /= norm(m_cast_direction, 2);
+}
+
+fvec dirlight::intensity(const vec &surfpos, const vec &surfnorm) const
+{
+    return m_intensity;
 }
 
 vec dirlight::dirtolight(const vec &surfpos) const
 {
-    vec direction("0 1 1");
-    return direction / norm(direction, 2);
+    return -m_cast_direction;
 }

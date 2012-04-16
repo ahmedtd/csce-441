@@ -38,7 +38,9 @@ public:
     fvec& voidcolor();
     const fvec& voidcolor() const;
 
-    fvec sendray(const ray &root, int depth=10) const;
+    set<intersection> cast_ray(const ray &root) const;
+    fvec color_intersections(const set<intersection> &intersec_set,
+                             int depth = 10) const;
 
 private:
     fvec mVoidColor;

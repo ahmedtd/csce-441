@@ -44,8 +44,15 @@ fvec material_phong::get_color(const vec &viewdir,
     set<light*>::iterator light_it = inscene.lights().begin();
     for(; light_it != inscene.lights().end(); light_it++)
     {
-        fvec lightint = (*light_it)->intensity(surfpos);
+        fvec lightint = (*light_it)->intensity(surfpos, surfnorm);
         vec  lightdir = (*light_it)->dirtolight(surfpos);
+
+        // Simple shadow calculation
+        ray ray_to_light(surfpos + surfnorm * 0.005, lightdir);
+        if(inscene.cast_ray(ray_to_light).size() != 0)
+        {
+            continue;
+        }
 
         double dot_ln = dot(lightdir, surfnorm);
 
@@ -79,7 +86,7 @@ fvec material_phong::get_color(const vec &viewdir,
     if(depth > 0)
     {
         // Outset the reflected ray along the normal slightly
-        ray reflected(surfpos + 0.05*surfnorm,
+        ray reflected(surfpos + 0.005*surfnorm,
                       2*(dot(viewdir, surfnorm))*surfnorm - viewdir);
         
         // Correct for wonky normals
@@ -88,7 +95,10 @@ fvec material_phong::get_color(const vec &viewdir,
             reflected.slope = -viewdir;
         }
 
-        total_color += m_reflect_intns * inscene.sendray(reflected, depth-1);
+        set<intersection> reflect_intersections = inscene.cast_ray(reflected);
+
+        total_color += m_reflect_intns
+            * inscene.color_intersections(reflect_intersections, depth-1);
     }
 
     return total_color;

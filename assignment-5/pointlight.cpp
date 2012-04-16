@@ -9,9 +9,10 @@ pointlight::pointlight(const fvec &color, const vec &position)
     
 }
 
-fvec pointlight::intensity(const vec &surfpos) const
+fvec pointlight::intensity(const vec &surfpos, const vec &surfnorm) const
 {
-    return fvec("1 1 1");
+    vec lightvec = dirtolight(surfpos);
+    return mColor;
 }
 
 vec pointlight::dirtolight(const vec &surfpos) const
