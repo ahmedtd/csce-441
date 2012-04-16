@@ -26,8 +26,8 @@ public:
     set<renderable*>& renderables();
     const set<renderable*>& renderables() const;
 
-    map<renderable*, material*>& materials();
-    const map<renderable*, material*>& materials() const;
+    map<renderable const*, material*>& materials();
+    const map<renderable const*, material*>& materials() const;
 
     set<light*>& lights();
     const set<light*>& lights() const;
@@ -46,7 +46,7 @@ private:
     fvec mVoidColor;
 
     set<renderable*> mRenderables;
-    map<renderable*, material*> mMaterials;
+    map<renderable const*, material*> mMaterials;
     set<light*> mLights;
     set<viewport*> mViewports; 
 };

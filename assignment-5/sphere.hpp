@@ -10,7 +10,7 @@ class sphere : public renderable
 public:
     sphere(const vec &position, double radius);
 
-    virtual set<intersection> intersect(const ray &viewer);
+    virtual set<intersection> intersect(const ray &viewer) const;
 
     // virtual fvec propogate(const ray &viewer,
     //                        const intersection &info,

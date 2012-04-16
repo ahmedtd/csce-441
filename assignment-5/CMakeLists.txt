@@ -35,7 +35,8 @@ add_executable (raytrace raytrace.cpp
 			 pointlight.cpp
 			 material_phong.cpp
 			 infinite_plane.cpp
-			 affine_renderable.cpp)
+			 affine_renderable.cpp
+			 cylinder.cpp)
 target_link_libraries (raytrace ${OPENGL_LIBRARIES}
                                 ${GLUT_LIBRARIES}
                                 ${ARMADILLO_LIBRARIES})

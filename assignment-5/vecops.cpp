@@ -13,7 +13,21 @@ using arma::zeros;
 
 #include "vecops.hpp"
 
-mat crosspmatrix(vec in)
+bool epsilon_compare(const vec &a, const vec &b, double epsilon)
+{
+    vec dif = a - b;
+    dif = abs(dif);
+    
+    for(unsigned int count = 0; count < a.n_rows; count++)
+    {
+        if(dif(count) > epsilon)
+            return false;
+    }
+    
+    return true;
+}
+
+mat crosspmatrix(const vec &in)
 {
     mat out(3,3);
     out.zeros(3,3);

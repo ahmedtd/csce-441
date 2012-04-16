@@ -20,7 +20,7 @@ sphere::sphere(const vec &position, double radius)
 {
 }
 
-set<intersection> sphere::intersect(const ray &viewer)
+set<intersection> sphere::intersect(const ray &viewer) const
 {   
     double dot_pp = dot(viewer.point, viewer.point);
     double dot_ps = dot(viewer.point, viewer.slope);
@@ -40,35 +40,38 @@ set<intersection> sphere::intersect(const ray &viewer)
     // If we have two solutions (handle the case of one solution as two really
     // close solutions)
     set<intersection> solset;
-    if(det >= 0.075)
+    if(det >= 0.0)
     {
         intersection solution;
         solution.target = this;
 
         solution.paramval = (-b + pow(det, 0.5))/(2.0*a);
         solution.generating_ray = viewer;
-        solution.surfnorm = 2*viewer.evaluate(solution.paramval) - 2*mPosition;
+        solution.surfpos  = viewer.evaluate(solution.paramval);
+        solution.surfnorm = 2*solution.surfpos - 2*mPosition;
         solution.surfnorm /= norm(solution.surfnorm, 2);
+        
         solset.insert(solution);
-
         
         solution.paramval = (-b - pow(det, 0.5))/(2.0*a);
         solution.generating_ray = viewer;
-        solution.surfnorm = 2*viewer.evaluate(solution.paramval) - 2*mPosition;
+        solution.surfpos  = viewer.evaluate(solution.paramval);
+        solution.surfnorm = 2*solution.surfpos - 2*mPosition;
         solution.surfnorm /= norm(solution.surfnorm, 2);
         solset.insert(solution);
     }
-    else if(det < 0.075 && det >= 0.0)
-    {
-        intersection solution;
-        solution.target = this;
-
-        solution.paramval = -b/(2.0*a);
-        solution.generating_ray = viewer;
-        solution.surfnorm = 2*viewer.evaluate(solution.paramval) - 2*mPosition;
-        solution.surfnorm /= norm(solution.surfnorm, 2);
-        solset.insert(solution);
-    }
+    // else if(det < 0.01 && det >= 0.0)
+    // {
+    //     intersection solution;
+    //     solution.target = this;
+        
+    //     solution.paramval = -b/(2.0*a);
+    //     solution.generating_ray = viewer;
+    //     solution.surfpos  = viewer.evaluate(solution.paramval);
+    //     solution.surfnorm = 2*solution.surfpos - 2*mPosition;
+    //     solution.surfnorm /= norm(solution.surfnorm, 2);
+    //     solset.insert(solution);
+    // }
     
     return solset;
 

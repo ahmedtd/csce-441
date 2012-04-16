@@ -12,7 +12,7 @@ class infinite_plane : public renderable
 public:
     infinite_plane(const vec &point, const vec& normal);
 
-    virtual set<intersection> intersect(const ray &viewer);
+    virtual set<intersection> intersect(const ray &viewer) const;
 
 private:
     vec mPoint;

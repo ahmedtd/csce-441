@@ -14,14 +14,21 @@ using arma::vec;
 class affine_renderable : public renderable
 {
 public:
-    affine_renderable(const mat &transform, const vec &offset, const set<renderable*> children);
+    affine_renderable(const vec &axis,
+                      double angle,
+                      const vec &scalefactors,
+                      const vec &translate,
+                      const set<renderable*> children);
 
-    set<intersection> intersect(const ray &viewer);
+    set<intersection> intersect(const ray &viewer) const;
 private:
-    mat m_transform;
-    mat m_inverse_transform;
+    mat m_rotate;
+    mat m_rotate_i;
     
-    vec m_offset;
+    vec m_scale;
+    vec m_scale_i;
+    
+    vec m_translate;
 
     set<renderable*> m_children;
 };

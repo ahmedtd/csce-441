@@ -6,7 +6,9 @@
 using arma::vec;
 using arma::mat;
 
-mat crosspmatrix(vec in);
+bool epsilon_compare(const vec &a, const vec &b, double epsilon = 0.05);
+
+mat crosspmatrix(const vec &in);
 
 mat rotmat(const vec &axis, double angle);
 

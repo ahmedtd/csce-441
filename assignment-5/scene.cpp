@@ -48,7 +48,14 @@ set<intersection> scene::cast_ray(const ray &root) const
     trial_key.paramval = intersec_lb->paramval + 0.0001;
     intersec_ub = all_intersec.upper_bound(trial_key);
 
-    return (set<intersection>(intersec_lb, intersec_ub));
+    if(intersec_lb == all_intersec.end())
+    {
+        return (set<intersection>());
+    }
+    else
+    {
+        return (set<intersection>(intersec_lb, intersec_ub));
+    }
 }
 
 fvec scene::color_intersections(const set<intersection> &intersect_set,
@@ -68,7 +75,7 @@ fvec scene::color_intersections(const set<intersection> &intersect_set,
     for(; intersect_it != intersect_set.end(); intersect_it++)
     {
         // Fetch the material in use by the renderable at the intersection
-        map<renderable*, material*>::const_iterator mat_it;
+        map<renderable const*, material*>::const_iterator mat_it;
         mat_it = mMaterials.find(intersect_it->target);
 
         // If a material exists for the object, use it
@@ -76,7 +83,7 @@ fvec scene::color_intersections(const set<intersection> &intersect_set,
         {
             pixcolor += (*mat_it).second->get_color(
                 -(intersect_it->generating_ray.slope),
-                intersect_it->generating_ray.evaluate(intersect_it->paramval),
+                intersect_it->surfpos,
                 intersect_it->surfnorm,
                 *this,
                 depth
@@ -104,12 +111,12 @@ const set<renderable*>& scene::renderables() const
     return mRenderables;
 }
 
-map<renderable*, material*>& scene::materials()
+map<renderable const*, material*>& scene::materials()
 {
     return mMaterials;
 }
 
-const map<renderable*, material*>& scene::materials() const
+const map<renderable const*, material*>& scene::materials() const
 {
     return mMaterials;
 }

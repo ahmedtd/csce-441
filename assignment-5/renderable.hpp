@@ -18,8 +18,9 @@ struct intersection
 {
     double paramval;
     ray generating_ray;
-    renderable *target;
+    renderable const *target;
     vec surfnorm;
+    vec surfpos;
 
     bool operator<(const intersection &rop) const;
 };
@@ -27,7 +28,7 @@ struct intersection
 class renderable
 {
 public:
-    virtual set<intersection> intersect(const ray &viewer) = 0;
+    virtual set<intersection> intersect(const ray &viewer) const = 0;
 
     // virtual fvec propogate(const ray &viewer,
     //                        const intersection &info,

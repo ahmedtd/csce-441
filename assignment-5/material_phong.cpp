@@ -7,6 +7,7 @@ using std::endl;
 using arma::zeros;
 
 #include "material_phong.hpp"
+#include "vecops.hpp"
 
 material_phong::material_phong(const fvec &color,
                                const fvec &spec_color,
@@ -40,7 +41,6 @@ fvec material_phong::get_color(const vec &viewdir,
         total_color(channel) += m_color(channel)*0.2;
     }
 
-    
     set<light*>::iterator light_it = inscene.lights().begin();
     for(; light_it != inscene.lights().end(); light_it++)
     {
@@ -48,11 +48,10 @@ fvec material_phong::get_color(const vec &viewdir,
         vec  lightdir = (*light_it)->dirtolight(surfpos);
 
         // Simple shadow calculation
-        ray ray_to_light(surfpos + surfnorm * 0.005, lightdir);
-        if(inscene.cast_ray(ray_to_light).size() != 0)
-        {
-            continue;
-        }
+        ray ray_to_light(surfpos + surfnorm * 0.05, lightdir);
+        set<intersection> shad_cast = inscene.cast_ray(ray_to_light);
+        bool in_shadow = shad_cast.size() > 0;
+        //bool in_shadow = false;
 
         double dot_ln = dot(lightdir, surfnorm);
 
@@ -61,7 +60,7 @@ fvec material_phong::get_color(const vec &viewdir,
         double dot_rv = dot(reflected, viewdir);
 
         // If the light is in front of the surface, apply lighting
-        if(dot_ln >= 0.0)
+        if(dot_ln >= 0.0 && !in_shadow)
         {
             for(int channel = 0; channel < 3; channel++)
             {

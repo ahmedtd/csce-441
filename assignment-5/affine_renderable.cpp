@@ -5,28 +5,35 @@ using std::endl;
 
 #include <armadillo>
 using arma::inv;
+using arma::eye;
+using arma::norm;
 
+#include "vecops.hpp"
 #include "affine_renderable.hpp"
 
-affine_renderable::affine_renderable(const mat &transform,
-                                     const vec &offset,
+affine_renderable::affine_renderable(const vec &axis,
+                                     double angle,
+                                     const vec &scalefactors,
+                                     const vec &translate,
                                      const set<renderable*> children)
 :
-    m_transform(transform),
-    m_inverse_transform(inv(transform)),
-    m_offset(offset),
+    m_rotate(rotmat(axis, angle)),
+    m_rotate_i(inv(m_rotate)),
+    m_scale(scalefactors),
+    m_scale_i(3),
+    m_translate(translate),
     m_children(children)
 {
-
-    //cout << m_inverse_transform << endl;
-    
+    m_scale_i(0) = 1.0 / m_scale(0);
+    m_scale_i(1) = 1.0 / m_scale(1);
+    m_scale_i(2) = 1.0 / m_scale(2);
 }
 
-set<intersection> affine_renderable::intersect(const ray &viewer)
+set<intersection> affine_renderable::intersect(const ray &viewer) const
 {
     // Put viewer into the transformed space
-    ray trans_viewer(m_inverse_transform * viewer.point - m_offset,
-                     m_inverse_transform * viewer.slope);
+    ray trans_viewer(m_scale_i % (m_rotate_i * (viewer.point - m_translate)),
+                     m_scale_i % (m_rotate_i * viewer.slope));
 
     set<intersection> child_intersec_transformed;
 
@@ -49,26 +56,20 @@ set<intersection> affine_renderable::intersect(const ray &viewer)
     {
         intersection untrans;
 
-        //cout << untrans.paramval << endl;
-        
         untrans.paramval = trans_it->paramval;
-
-        // untrans.paramval = norm(trans_viewer.slope, 2)
-        //                     / norm(viewer.slope, 2)
-        //                     * trans_it->paramval;
-
-        // untrans.paramval = norm(viewer.slope, 2)
-        //                    / norm(trans_viewer.slope, 2)
-        //                    * trans_it->paramval;
-
-
+        
         untrans.generating_ray = viewer;
         
         untrans.target = trans_it->target;
 
-        //untrans.surfnorm = trans_it->surfnorm;
-        untrans.surfnorm = m_transform.t() * trans_it->surfnorm;
+        untrans.surfnorm = m_rotate * (m_scale_i % trans_it->surfnorm);
         untrans.surfnorm /= norm(untrans.surfnorm, 2);
+
+        // Perturb the transformed point outwards to combat a loss of numeric
+        // precision that occurs in the transform
+        vec trans_point = trans_viewer.evaluate(trans_it->paramval);
+        untrans.surfpos = m_translate + (m_rotate * (m_scale % trans_point))
+            + untrans.surfnorm * 0.05;
 
         child_intersec.insert(untrans);
     }
