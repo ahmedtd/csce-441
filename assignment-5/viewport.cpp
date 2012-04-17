@@ -21,8 +21,9 @@ viewport::viewport(const vec &eyepos,
                    double vangle)
  :
     mEyepos(eyepos),
-    mEyeforward(eyeforward),
-    mEyeup(eyeup),
+    mEyeforward(eyeforward / norm(eyeforward, 2)),
+    mEyeup((eyeup - dot(mEyeforward, eyeup)*mEyeforward)
+           / norm(eyeup - dot(mEyeforward, eyeup)*mEyeforward, 2)),
     mHangle(hangle),
     mVangle(vangle)
 {

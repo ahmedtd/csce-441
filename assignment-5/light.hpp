@@ -9,8 +9,9 @@ using arma::fvec;
 class light
 {
 public:
-    virtual fvec intensity(const vec &surfpos, const vec &surfnorm) const = 0;
+    virtual fvec intensity(const vec &surfpos) const = 0;
     virtual vec dirtolight(const vec &surfpos) const = 0;
+    virtual double dist_to_light(const vec &surfpos) const = 0;
 };
 
 #endif

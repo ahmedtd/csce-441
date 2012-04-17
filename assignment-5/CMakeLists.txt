@@ -21,7 +21,7 @@ if (GLUT_FOUND)
    include_directories (${GLUT_INCLUDE_DIR})
 endif (GLUT_FOUND)
 
-set(CMAKE_CXX_FLAGS "-Wall -g --pedantic")
+set(CMAKE_CXX_FLAGS "-Wall --pedantic -O3")
 
 add_executable (raytrace raytrace.cpp
                          sphere.cpp

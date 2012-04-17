@@ -18,7 +18,7 @@ public:
                       double angle,
                       const vec &scalefactors,
                       const vec &translate,
-                      const set<renderable*> children);
+                      const set<renderable*> &children);
 
     set<intersection> intersect(const ray &viewer) const;
 private:

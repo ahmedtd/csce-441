@@ -44,15 +44,25 @@ fvec material_phong::get_color(const vec &viewdir,
     set<light*>::iterator light_it = inscene.lights().begin();
     for(; light_it != inscene.lights().end(); light_it++)
     {
-        fvec lightint = (*light_it)->intensity(surfpos, surfnorm);
+        fvec lightint = (*light_it)->intensity(surfpos);
         vec  lightdir = (*light_it)->dirtolight(surfpos);
 
         // Simple shadow calculation
         ray ray_to_light(surfpos + surfnorm * 0.05, lightdir);
         set<intersection> shad_cast = inscene.cast_ray(ray_to_light);
-        bool in_shadow = shad_cast.size() > 0;
-        //bool in_shadow = false;
+        set<intersection>::const_iterator first = shad_cast.begin();
 
+        bool in_shadow;
+        if(first != shad_cast.end()
+           && first->paramval < (*light_it)->dist_to_light(surfpos))
+        {
+            in_shadow = true;
+        }
+        else
+        {
+            in_shadow = false;
+        }
+        
         double dot_ln = dot(lightdir, surfnorm);
 
         vec reflected = 2*dot_ln*surfnorm - lightdir;

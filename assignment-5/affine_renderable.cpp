@@ -15,7 +15,7 @@ affine_renderable::affine_renderable(const vec &axis,
                                      double angle,
                                      const vec &scalefactors,
                                      const vec &translate,
-                                     const set<renderable*> children)
+                                     const set<renderable*> &children)
 :
     m_rotate(rotmat(axis, angle)),
     m_rotate_i(inv(m_rotate)),
