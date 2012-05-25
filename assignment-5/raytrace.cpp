@@ -457,9 +457,22 @@ void keyboardCallback(unsigned char key, int x, int y)
 
 void reshapeCallback(int new_width, int new_height)
 {
+    double pixels_per_meter = 20;
+
     renderbuffer.reshape(new_width, new_height);
 
     glViewport(0, 0, new_width, new_height);
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0,
+            ((double)new_width)/pixels_per_meter,
+            ((double)new_width)/pixels_per_meter,
+            0.0,
+            -1.0,
+            1.0);
+
+    glMatrixMode(GL_MODELVIEW);
 }
 
 int main(int argc, char **argv)

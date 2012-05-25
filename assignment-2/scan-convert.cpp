@@ -452,8 +452,8 @@ void reshapeCallback(int new_width, int new_height)
         clip_tl.x(0);
         clip_tl.y(window_height);
 
-	clip_br.x(window_width);
-	clip_br.y(0);
+        clip_br.x(window_width);
+        clip_br.y(0);
     }
     
     // Update the projection matrix to account for the window shape
